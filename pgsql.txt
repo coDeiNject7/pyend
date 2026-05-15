@@ -1,0 +1,256 @@
+here we need both PostgreSQL(actual db) & pgadmin4(db GUI)
+
+
+step 1 : run command (sudo apt update, sudo apt install postgresql postgresql-contrib)
+
+step 3 : verify postgresql running(sudo systemctl status postgresql)
+         we need to something like active
+
+step 4 : run sudo -u postgres psql, in termial it changes to postges=# this means postgresql is works.
+
+next to create user we need to do this 
+STEP 1 — Install PostgreSQL
+
+Run:
+
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+
+Wait until installation finishes.
+
+STEP 2 — Verify PostgreSQL Running
+
+Run:
+
+sudo systemctl status postgresql
+
+You should see:
+
+active (running)
+
+Press:
+
+q
+
+to exit status screen.
+
+STEP 3 — Open PostgreSQL Shell
+
+Run:
+
+sudo -u postgres psql
+
+Now terminal changes to:
+
+postgres=#
+
+This means PostgreSQL works.
+
+STEP 4 — Create Your Database
+
+Inside psql shell:
+
+CREATE DATABASE fastapi_db;
+STEP 5 — Create User
+CREATE USER pav WITH PASSWORD 'password123';
+
+Replace:
+
+pav → your username
+password123 → your password
+STEP 6 — Give Permissions
+GRANT ALL PRIVILEGES ON DATABASE fastapi_db TO pav;
+STEP 7 — Exit PostgreSQL Shell
+\q
+STEP 8 — Install pgAdmin4
+
+Now install pgAdmin4.
+
+FIRST add repository
+
+Run these ONE BY ONE carefully:
+
+curl -fsS https://www.pgadmin.org/static/packages_pgadmin_org.pub | sudo gpg --dearmor -o /usr/share/keyrings/packages-pgadmin-org.gpg
+
+Then:
+
+sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/packages-pgadmin-org.gpg] https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$(lsb_release -cs) pgadmin4 main" > /etc/apt/sources.list.d/pgadmin4.list'
+
+Then:
+
+sudo apt update
+STEP 9 — Install pgAdmin4 Desktop
+sudo apt install pgadmin4-desktop
+STEP 10 — Open pgAdmin4
+
+Search:
+
+pgAdmin4
+
+from applications menu.
+
+STEP 11 — Connect PostgreSQL in pgAdmin
+
+Inside pgAdmin:
+
+Register Server
+
+Right click:
+
+Servers
+→ Register
+→ Server
+General Tab
+
+Name:
+
+Local PostgreSQL
+Connection Tab
+Field	Value
+Host	localhost
+Port	5432
+Username	pav
+Password	password123
+
+Save password.
+
+Click Save.
+
+Next Step
+
+Now you need to:
+
+create your database
+connect FastAPI to PostgreSQL
+run Alembic migration
+verify tables inside pgAdmin
+STEP 1 — Create Database
+
+On left side:
+
+Servers
+ └── Local PostgreSQL
+
+Expand it.
+
+Then:
+
+Databases
+
+Right click:
+
+Create
+→ Database
+Create Database
+
+Database name:
+
+fastapi_db
+
+Save.
+
+Now you’ll see:
+
+fastapi_db
+
+under Databases.
+
+STEP 2 — Install PostgreSQL Driver
+
+Inside your project venv:
+
+pip install psycopg2-binary
+STEP 3 — Update database.py
+
+Replace old SQLite URL:
+
+DATABASE_URL = "sqlite:///./test.db"
+
+with:
+
+DATABASE_URL = "postgresql://pav:password123@localhost/fastapi_db"
+
+Replace:
+
+pav → your postgres username
+password123 → your password
+IMPORTANT
+
+Remove THIS completely:
+
+connect_args={"check_same_thread": False}
+
+because PostgreSQL does NOT use it.
+
+Your database.py should become
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+
+DATABASE_URL = "postgresql://pav:password123@localhost/fastapi_db"
+
+engine = create_engine(DATABASE_URL)
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+Base = declarative_base()
+STEP 4 — Update alembic.ini
+
+Replace:
+
+sqlite:///./test.db
+
+with:
+
+postgresql://pav:password123@localhost/fastapi_db
+STEP 5 — Run Migration
+
+Now run:
+
+alembic upgrade head
+
+This creates tables inside PostgreSQL.
+
+STEP 6 — Verify in pgAdmin
+
+Inside pgAdmin:
+
+Databases
+ └── fastapi_db
+      └── Schemas
+           └── public
+                └── Tables
+
+You should see:
+
+users
+alembic_version
+STEP 7 — Test API
+
+Run:
+
+uvicorn app.main:app --reload
+
+Test:
+
+POST /users
+GET /users
+
+Now data is stored in PostgreSQL instead of SQLite.
+
+we might get a ERROR (Your PostgreSQL user does not have permission to create tables, permission denied for schema public) because of permission 
+
+here is the fix
+run sudo -u postgres psql
+#connect to database
+\c fastapi_db
+give Permissions
+run this commands(GRANT ALL ON SCHEMA public TO pav;, GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO pav;, GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO pav;)
+Best fix (ALTER DATABASE fastapi_db OWNER TO pav;)
+Exit the database
+\q
+
+then run this command (alembin upgrade head) this works.

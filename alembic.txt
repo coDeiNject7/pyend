@@ -1,0 +1,34 @@
+step 1 : install alembic(pip install alembic)
+
+step 2 : generate the alembic folders/files by running this in root of the project folder (alembic init alembic)
+
+step 3 : in this generated alembic related files in the root project folder we get this alembic.ini here we need to update the database url. for learning
+         i am using SQLite, so find sqlalchemy.url and put the database url (sqlalchemy.url = sqlite:///./test.db)
+
+step 4 : in root of the project folder another folder is generated named alembic under this it has env.py, here we need to import the Base of the database
+         which we created as Base = declarative_base. in my case
+         from app.db.database import Base
+         and also we need to import the models folders so that alembic can track the models which is for the database tabels. in my case
+         from app.models.user import User
+         and then around line 20 there will be target_metadata = None make this to target_metadata = Base.metadata. important comment this 
+         #Base.metadata.create_all(bind=engine) becuase we did this target_metadate=Base.metadata in /alembic/env.py, so next time this alembic will create the database.
+
+step 5 : run this command (alembic revision --autogenarate -m "Initial migration")
+
+step 6 : run this command to push the changes in to SQLite database file (alembic upgrade head)
+
+3 step cycle = modify code, generate migration( alembic revision --autogenerate -m "message"), push changes to SQLite db( alembic upgrade head)
+
+Important Rule for SQLite and Alembic
+Because you are using SQLite for learning, you need to know about one major technical limitation before you modify your models.
+SQLite is a lightweight file-based database. Unlike robust databases like PostgreSQL, standard SQLite does not easily support altering or dropping columns after a table is created. If you try to delete a column or change a column type later, standard Alembic commands will fail on SQLite [1, 2].
+To fix this for the future, open your alembic/env.py file right now and look for the run_migrations_online function. Inside that function, locate the context.configure block and add render_as_batch=True [1]:
+python
+def run_migrations_online() -> None:
+    # ... existing setup code ...
+    
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        render_as_batch=True,  # <-- ADD THIS LINE HERE
+    )
