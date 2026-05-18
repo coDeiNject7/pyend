@@ -1,0 +1,6 @@
+step 1 : run this command (sudo -u postgres pg_dump -d fastapi_db -F c -f /tmp/fastapi_backup.dump)
+         to verify run (ls /tmp), you need to find fastapi_backup.dump
+
+step 2 : run this command (cp /tmp/fastapi_backup.dump ~/) this copy the file to home and check it by running this command (ls ~)
+
+step 3 : move the fastapi_backup.dump file to other laptop
