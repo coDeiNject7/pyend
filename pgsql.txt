@@ -254,3 +254,33 @@ Exit the database
 \q
 
 then run this command (alembin upgrade head) this works.
+
+
+
+-----------------------------------------------------------------------------------------------
+
+                              WINDOWS SETUP
+
+-----------------------------------------------------------------------------------------------
+
+step 1 : visit this site https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
+          download for windows
+
+step 2 : after the download double tap the installed file, keep almost everything default
+          Keep these checked:
+
+          ✔ PostgreSQL Server
+          ✔ pgAdmin 4
+          ✔ Command Line Tools
+
+          Give a password and keep it safe.
+
+step 3 : get the backup file which is .dump file and in the pgadmin4 under the server under the database
+          the data base which we created is present right click and select restore and on the 
+          window browser the file and change the type to all files if the .dump not appear means
+          select the file and save it and reopen the pgadmin4.
+
+step 4 : then install this package pip install psycopg2-binary
+
+step 5 : test alembic by running (alembic current, alembic history), no Error then run the backend
+          server

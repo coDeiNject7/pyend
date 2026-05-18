@@ -1,0 +1,8 @@
+step 1 : clone the project
+
+step 2 : install git if not present and install python if not present and create venv by doing (python -m venv $venv-name)
+         for activating the venv do $venv-name\Scripts\activate.bat
+        
+step 3 : run this command (pip install -r requirements.txt)
+
+step 4 : 
