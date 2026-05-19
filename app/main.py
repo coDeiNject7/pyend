@@ -16,5 +16,5 @@ def root():
 
 app.include_router(auth_router)
 
-#GET & POST API for Users
+#GET, POST, UPDAT AND DELETE API for Users
 app.include_router(users_router)
