@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict
+from typing import Optional
 
 class UserBase(BaseModel):
     name:str
@@ -22,3 +23,7 @@ class UserDelete(BaseModel):
 
 class UserUpdate(UserBase):
     pass
+
+class UserUpdatePartially(BaseModel):
+    name:Optional[str]=None
+    email:Optional[str]=None
